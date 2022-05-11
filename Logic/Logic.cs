@@ -91,11 +91,6 @@ namespace Logic
         {
             Ball b1 = (Ball)object1;
             Ball b2 = (Ball)object2;
-            // need to back up the ball to prevent multiple collisions of the same objects
-            // multiple time in a row
-            while (b1.isIntercepting(b2)) {
-                b1.Move(-0.00001f);
-            }
 
             float mass1 = b1.Radius;
             float mass2 = b2.Radius;
@@ -103,15 +98,18 @@ namespace Logic
                 + (2 * mass2) * b2.Velocity.X  / (mass1 + mass2);
             var vel1Y = (mass1 - mass2) * b1.Velocity.Y / (mass1 + mass2)
                 + (2 * mass2) * b2.Velocity.Y / (mass1 + mass2);
-            var vel2X = 2 * mass1 * b1.Velocity.X / (mass1 + mass2)
+            var vel2X = 2f * mass1 * b1.Velocity.X / (mass1 + mass2)
                 + (mass2 - mass1) * b2.Velocity.X / (mass1 + mass2);
-            var vel2Y = 2 * mass1 * b1.Velocity.Y / (mass1 + mass2)
+            var vel2Y = 2f * mass1 * b1.Velocity.Y / (mass1 + mass2)
                 + (mass2 - mass1) * b2.Velocity.Y / (mass1 + mass2);
 
             b1.Velocity.X = vel1X;
             b1.Velocity.Y = vel1Y;
             b2.Velocity.X = vel2X;
             b2.Velocity.Y = vel2Y;
+            // immediately move the balls to avoid them colliding again without actually moving
+            b1.Move(8f / 1000f);
+            b2.Move(8f / 1000f);
         }
 
         public override void UpdateMovingObjects(float deltaTime)
