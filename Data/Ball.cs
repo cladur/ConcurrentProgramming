@@ -54,5 +54,10 @@ namespace Data
         {
             get { return position.Y - Radius; }
         }
+
+        public bool isIntercepting(Ball b2)
+        {
+            return Position.Distance(b2.Position) <= Radius + b2.Radius;
+        }
     }
 }

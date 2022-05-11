@@ -32,7 +32,7 @@ namespace Logic
         {
             int maxX = (int)boxSize.X;
             int maxY = (int)boxSize.Y;
-            int radius = random.Next(10, 20);
+            int radius = random.Next(5, 25);
             int x = random.Next(radius, maxX - radius);
             int y = random.Next(radius, maxY - radius);
             Vector2 position = new Vector2(x, y);
@@ -87,11 +87,63 @@ namespace Logic
             movingObject.Move(deltaTime);
         }
 
+        private void Collision(Data.MovingObject object1, Data.MovingObject object2)
+        {
+            Ball b1 = (Ball)object1;
+            Ball b2 = (Ball)object2;
+            // need to back up the ball to prevent multiple collisions of the same objects
+            // multiple time in a row
+            while (b1.isIntercepting(b2)) {
+                b1.Move(-0.00001f);
+            }
+
+            float mass1 = b1.Radius;
+            float mass2 = b2.Radius;
+            var vel1X = (mass1 - mass2) * b1.Velocity.X / (mass1 + mass2)
+                + (2 * mass2) * b2.Velocity.X  / (mass1 + mass2);
+            var vel1Y = (mass1 - mass2) * b1.Velocity.Y / (mass1 + mass2)
+                + (2 * mass2) * b2.Velocity.Y / (mass1 + mass2);
+            var vel2X = 2 * mass1 * b1.Velocity.X / (mass1 + mass2)
+                + (mass2 - mass1) * b2.Velocity.X / (mass1 + mass2);
+            var vel2Y = 2 * mass1 * b1.Velocity.Y / (mass1 + mass2)
+                + (mass2 - mass1) * b2.Velocity.Y / (mass1 + mass2);
+
+            b1.Velocity.X = vel1X;
+            b1.Velocity.Y = vel1Y;
+            b2.Velocity.X = vel2X;
+            b2.Velocity.Y = vel2Y;
+        }
+
         public override void UpdateMovingObjects(float deltaTime)
         {
             for (int i = 0; i < dataStorage.Count(); i++)
             {
-                MoveObject(dataStorage.Get(i), boxSize, deltaTime);
+                // move all balls
+                MoveObject(dataStorage.Get(i), boxSize, deltaTime);     
+            }
+            for (int i = 0; i < dataStorage.Count(); i++)
+            {
+                // check for collisions of current ball with all other balls
+                for (int j = 0; j < dataStorage.Count(); j++)
+                {
+                    // ignore self
+                    if (i == j)
+                        continue;
+
+                    if (dataStorage.Get(i) is Ball ball1 && dataStorage.Get(j) is Ball ball2)
+                    {
+                        if (ball1.isIntercepting(ball2))
+                        {
+                            /*while (ball1.isIntercepting(ball2))
+                            {
+                                ball1.Move(-1);
+                            }*/
+
+                            Collision(ball1, ball2);
+                            return;
+                        }
+                    }
+                }
             }
         }
 
