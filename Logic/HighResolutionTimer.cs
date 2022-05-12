@@ -4,7 +4,7 @@ using System.Diagnostics;
 
 // Implementation taken from https://gist.github.com/DraTeots/436019368d32007284f8a12f1ba0f545
 
-namespace Logic
+namespace Data
 {
     public class HighResolutionTimer
     {

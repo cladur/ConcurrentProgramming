@@ -5,19 +5,27 @@ namespace Data
 {
     public class Ball : MovingObject
     {
-        public Ball(Vector2 position, Vector2 velocity, float radius)
+        public Ball(Vector2 position, Vector2 velocity, float radius, float mass)
         {
             Position = position;
             Velocity = velocity;
             Radius = radius;
+            Mass = mass;
         }
 
         private float radius;
+        private float mass;
 
         public float Radius
         {
             get { return radius; }
             set { if (value > 0) radius = value; }
+        }
+
+        public float Mass
+        {
+            get { return mass; }
+            set { if (value > 0) mass = value; }
         }
 
         public float Diameter
@@ -55,7 +63,7 @@ namespace Data
             get { return position.Y - Radius; }
         }
 
-        public bool isIntercepting(Ball b2)
+        public bool isIntersecting(Ball b2)
         {
             return Position.Distance(b2.Position) <= Radius + b2.Radius;
         }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Collections.ObjectModel;
 using System.Text;
 
@@ -14,14 +15,15 @@ namespace Data
             movingObjects.Add(movingObject);
         }
 
-        public override int Count()
+        public override int Count
         {
-            return movingObjects.Count;
+            get { return movingObjects.Count; }
         }
 
         public override MovingObject Get(int index)
         {
-            return movingObjects[index];
+            MovingObject movingObject = movingObjects[index];
+            return movingObject;
         }
 
         public override ObservableCollection<MovingObject> GetAll()

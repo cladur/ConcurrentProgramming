@@ -8,7 +8,10 @@ namespace Data
     public abstract class DataStorageAbstract
     {
         public abstract void Add(MovingObject movingObject);
-        public abstract int Count();
+        public abstract int Count
+        {
+            get;
+        }
         public abstract MovingObject Get(int index);
         public abstract void Remove(MovingObject movingObject);
         public abstract void RemoveAt(int index);

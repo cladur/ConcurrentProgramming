@@ -10,9 +10,9 @@ namespace Presentation.Model
     {
         private LogicAbstract logic;
 
-        public Model(float boxWidth, float boxHeight)
+        public Model(float boxWidth, float boxHeight, Action callback)
         {
-            logic = LogicAbstract.CreateInstance(boxWidth, boxHeight);
+            logic = LogicAbstract.CreateInstance(boxWidth, boxHeight, callback);
         }
 
         public void AddBall()

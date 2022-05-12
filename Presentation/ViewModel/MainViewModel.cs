@@ -10,7 +10,6 @@ namespace Presentation.ViewModel
     public class MainViewModel : ViewModelBase
     {
         public Model.Model Model;
-        DispatcherTimer timer = new DispatcherTimer();
         private ObservableCollection<Data.MovingObject> items;
 
         public ObservableCollection<Data.MovingObject> Items {
@@ -21,7 +20,7 @@ namespace Presentation.ViewModel
                 RaisePropertyChanged();
             }
         }
-        
+
         public int StartingBallCount
         {
             get => Model.GetStartingBalls();
@@ -33,14 +32,11 @@ namespace Presentation.ViewModel
 
         public MainViewModel()
         {
-            Model = new Model.Model(800, 370);
+            Model = new Model.Model(800, 370, UpdateDisplayedBalls);
             AddBallClick = new RelayCommand(Model.AddBall);
             RemoveBallClick = new RelayCommand(Model.RemoveBall);
             AddNBallsClick = new RelayCommand(Model.AddNBalls);
             Items = new ObservableCollection<Data.MovingObject>();
-            timer.Interval = TimeSpan.FromMilliseconds(8);
-            timer.Tick += (sender, args) => UpdateDisplayedBalls();
-            timer.Start();
         }
 
         public void UpdateDisplayedBalls()
