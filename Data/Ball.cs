@@ -1,12 +1,27 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Numerics;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Data
 {
     public class Ball : MovingObject
     {
+        private readonly Stopwatch stopwatch = new Stopwatch();
+        private Task task;        
+        
         public Ball(Vector2 position, Vector2 velocity, float radius, float mass)
         {
+            Position = position;
+            Velocity = velocity;
+            Radius = radius;
+            Mass = mass;
+        }
+
+        public Ball(int index, Vector2 position, Vector2 velocity, float radius, float mass)
+        {
+            Index = index;
             Position = position;
             Velocity = velocity;
             Radius = radius;
@@ -66,6 +81,28 @@ namespace Data
         public bool isIntersecting(Ball b2)
         {
             return Position.Distance(b2.Position) <= Radius + b2.Radius;
+        }
+
+        private async Task Run(int interval, CancellationToken cancellationToken)
+        {
+            while (!cancellationToken.IsCancellationRequested)
+            {
+                stopwatch.Reset();
+                stopwatch.Start();
+                if (!cancellationToken.IsCancellationRequested)
+                {
+                    Move(interval/1000f);
+                    OnPropertyChanged();
+                }
+                stopwatch.Stop();
+
+                await Task.Delay((int)(interval - stopwatch.ElapsedMilliseconds), cancellationToken);
+            }
+        }
+
+        public override void StartMoving(int interval, CancellationToken cancellationToken)
+        {
+            task = Task.Run(() => Run(interval, cancellationToken));
         }
     }
 }

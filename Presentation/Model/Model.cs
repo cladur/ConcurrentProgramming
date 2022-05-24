@@ -13,6 +13,7 @@ namespace Presentation.Model
         public Model(float boxWidth, float boxHeight, Action callback)
         {
             logic = LogicAbstract.CreateInstance(boxWidth, boxHeight, callback);
+            logic.Start();
         }
 
         public void AddBall()

@@ -36,7 +36,7 @@ namespace Presentation.ViewModel
             AddBallClick = new RelayCommand(Model.AddBall);
             RemoveBallClick = new RelayCommand(Model.RemoveBall);
             AddNBallsClick = new RelayCommand(Model.AddNBalls);
-            Items = new ObservableCollection<Data.MovingObject>();
+            Items = Model.GetMovableObjects();   
         }
 
         public void UpdateDisplayedBalls()

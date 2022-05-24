@@ -1,13 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.ComponentModel;
+using System.Runtime.CompilerServices;
 using System.Text;
+using System.Threading;
 
 namespace Data
 {
-    public abstract class MovingObject
+    public abstract class MovingObject : INotifyPropertyChanged
     {
         protected Vector2 position;
         protected Vector2 velocity;
+        public event PropertyChangedEventHandler PropertyChanged;
 
         public Vector2 Position
         {
@@ -19,6 +21,12 @@ namespace Data
         {
             get { return velocity; }
             set { velocity = value; }
+        }
+
+        public int Index
+        {
+            get;
+            set;
         }
 
         public void Move(float deltaTime) {
@@ -56,6 +64,13 @@ namespace Data
                 return false;
             }
             return true;
+        }
+
+        public abstract void StartMoving(int interval, CancellationToken cancellationToken);
+        
+        protected void OnPropertyChanged([CallerMemberName] string name = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
         }
     }
 }
