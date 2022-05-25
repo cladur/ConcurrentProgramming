@@ -104,5 +104,11 @@ namespace Data
         {
             task = Task.Run(() => Run(interval, cancellationToken));
         }
+
+        public string ToXml()
+        {
+            return string.Format("<ball index=\"{0}\" position=\"{1}\" velocity=\"{2}\" radius=\"{3}\" mass=\"{4}\" />",
+                Index, Position, Velocity, Radius, Mass);
+        }
     }
 }

@@ -6,6 +6,7 @@ using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Xml;
 
 namespace Logic
 {
@@ -21,6 +22,8 @@ namespace Logic
         CancellationToken cancellationToken;
         Action updateCallback;
         int frames = 8;
+        XmlWriterSettings settings;
+        XmlWriter writer;
 
         public Logic(DataStorageAbstract dataStorage, Vector2 boxSize, Action updateCallback) : this(boxSize, updateCallback)
         {
@@ -32,6 +35,12 @@ namespace Logic
             this.dataStorage = DataStorageAbstract.CreateInstance();
             this.boxSize = boxSize;
             this.updateCallback = updateCallback;
+            settings = new XmlWriterSettings();
+            settings.Indent = true;
+            settings.NewLineOnAttributes = true;
+            writer = XmlWriter.Create("balls.xml", settings);
+            writer.WriteStartElement("root");
+            writer.WriteStartElement("balls");
 
             //timer = new HighResolutionTimer(frames);
             //timer.UseHighPriorityThread = false;
@@ -161,6 +170,11 @@ namespace Logic
             WallCollision(ball, boxSize, frames);
             BallCollisions(dataStorage.GetAll(), ball.Index);
             OnPropertyChanged(ball);
+            
+            // Write ball data to xml
+            Ball ball1 = (Ball)ball;
+            writer.WriteString(ball1.ToXml());
+            // ################
             mutex.ReleaseMutex();
             updateCallback.Invoke();
         }
