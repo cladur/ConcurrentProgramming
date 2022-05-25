@@ -21,7 +21,7 @@ namespace Logic
         CancellationTokenSource cancellationTokenSource;
         CancellationToken cancellationToken;
         Action updateCallback;
-        int frames = 8;
+        int frames = 16;
         XmlWriterSettings settings;
         XmlWriter writer;
 
@@ -71,6 +71,10 @@ namespace Logic
                         return false;
                     }
                 }
+            }
+            if (ball == null)
+            {
+                return false;
             }
             ball.PropertyChanged += BallChanged;
             dataStorage.Add(ball);
@@ -172,8 +176,8 @@ namespace Logic
             OnPropertyChanged(ball);
             
             // Write ball data to xml
-            Ball ball1 = (Ball)ball;
-            writer.WriteString(ball1.ToXml());
+            //Ball ball1 = (Ball)ball;
+            //writer.WriteString(ball1.ToXml());
             // ################
             mutex.ReleaseMutex();
             updateCallback.Invoke();
@@ -222,6 +226,8 @@ namespace Logic
 
         private void ResolveCollision(Data.MovingObject object1, Data.MovingObject object2)
         {
+            // Calling Start and Stop later in this method solves the glitching balls thing (i think?) but it also makes the program run laggy
+            //Stop();
             Ball b1 = (Ball)object1;
             Ball b2 = (Ball)object2;
 
@@ -238,6 +244,7 @@ namespace Logic
             b1.Velocity.Y = vel1Y;
             b2.Velocity.X = vel2X;
             b2.Velocity.Y = vel2Y;
+            //Start();
             // immediately move the balls to avoid them colliding again without actually moving
             b1.Move(frames * 1f / 1000f);
             b2.Move(frames * 1f / 1000f);
