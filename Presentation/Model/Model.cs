@@ -3,6 +3,7 @@ using Logic;
 
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 
 namespace Presentation.Model
 {

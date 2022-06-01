@@ -10,6 +10,11 @@ namespace Data
     {
         private ObservableCollection<MovingObject> movingObjects = new ObservableCollection<MovingObject>();
 
+        public DataStorage()
+        {
+            movingObjects.Clear();
+        }
+
         public override void Add(MovingObject movingObject)
         {
             movingObjects.Add(movingObject);

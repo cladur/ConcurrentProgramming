@@ -92,7 +92,7 @@ namespace Data
                 if (!cancellationToken.IsCancellationRequested)
                 {
                     Move(interval/1000f);
-                    OnPropertyChanged();
+                    OnPropertyChanged(); 
                 }
                 stopwatch.Stop();
 

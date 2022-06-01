@@ -21,7 +21,6 @@ namespace Logic
 
         public abstract void SetStartingBalls(int n);
 
-        public abstract void UpdateMovingObjects(float milliseconds);
 
         public abstract void Start();
 
@@ -29,7 +28,7 @@ namespace Logic
 
         public static LogicAbstract CreateInstance(float boxWidth, float boxHeight, Action callback)
         {
-            return new Logic(new Vector2(boxWidth, boxHeight), callback);
+            return new Logic(new Vector2(boxWidth, boxHeight), callback, LogAbstract.New());
         }
         
         public static LogicAbstract CreateInstance(DataStorageAbstract dataStorage, float boxWidth, float boxHeight, Action updateCallback)

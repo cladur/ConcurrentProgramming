@@ -5,8 +5,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using System.ComponentModel;
-using System.Runtime.CompilerServices;
-using System.Xml;
+using System.IO;
 
 namespace Logic
 {
@@ -15,6 +14,7 @@ namespace Logic
         private Random random = new Random();
         private HighResolutionTimer timer;
         DataStorageAbstract dataStorage;
+        private LogAbstract logger;
         Vector2 boxSize;
         int startingBalls = 1;
         Mutex mutex = new Mutex();
@@ -22,25 +22,21 @@ namespace Logic
         CancellationToken cancellationToken;
         Action updateCallback;
         int frames = 16;
-        XmlWriterSettings settings;
-        XmlWriter writer;
 
-        public Logic(DataStorageAbstract dataStorage, Vector2 boxSize, Action updateCallback) : this(boxSize, updateCallback)
+        public Logic(DataStorageAbstract dataStorage, Vector2 boxSize, Action updateCallback)
         {
+            this.boxSize = boxSize;
             this.dataStorage = dataStorage;
+            this.updateCallback = updateCallback;
+            logger = LogAbstract.New();
         }
 
-        public Logic(Vector2 boxSize, Action updateCallback)
+        public Logic(Vector2 boxSize, Action updateCallback, LogAbstract logApi)
         {
             this.dataStorage = DataStorageAbstract.CreateInstance();
             this.boxSize = boxSize;
             this.updateCallback = updateCallback;
-            settings = new XmlWriterSettings();
-            settings.Indent = true;
-            settings.NewLineOnAttributes = true;
-            writer = XmlWriter.Create("balls.xml", settings);
-            writer.WriteStartElement("root");
-            writer.WriteStartElement("balls");
+            this.logger = logApi;
 
             //timer = new HighResolutionTimer(frames);
             //timer.UseHighPriorityThread = false;
@@ -61,23 +57,28 @@ namespace Logic
             Vector2 velocity = new Vector2(250.0f * velX, 250.0f * velY);
             float mass = radius;
             Ball ball = new Ball(dataStorage.Count, position, velocity, radius, mass);
-            //Console.WriteLine("Created a ball with index: " + dataStorage.Count);
-            for (int i = 0; i < dataStorage.Count; i++)
-            {
-                if (dataStorage.Get(i) is Ball exisitingBall)
-                {
-                    if (ball.isIntersecting(exisitingBall))
-                    {
-                        return false;
-                    }
-                }
-            }
             if (ball == null)
             {
                 return false;
             }
+            if (dataStorage.Count != 0)
+            {
+                for (int i = 0; i < dataStorage.Count; i++)
+                {
+                    if (dataStorage.Get(i) is Ball exisitingBall)
+                    {
+                        if (ball.isIntersecting(exisitingBall))
+                        {
+                            return false;
+                        }
+                    }
+                }
+            }
             ball.PropertyChanged += BallChanged;
             dataStorage.Add(ball);
+            // logging adding ball
+            logger.Write("Adding ball", ball);
+            
             return true;
         }
 
@@ -94,23 +95,28 @@ namespace Logic
             });
             mutex.ReleaseMutex();
             Stop();
+            // todo: it sometmes throws null pointer ex here when initializing the first N balls
             Start();
             return true;
         }
 
         public override async Task<bool> AddNBalls(int n)
         {
-            mutex.WaitOne();
+            for (int i = 0; i < n; i++)
+            {
+                await AddBall();
+            }
+            /* mutex.WaitOne();
             List<Task<bool>> tasks = new List<Task<bool>>();
             for (int i = 0; i < n; i++)
             {
                 tasks.Add(AddBall());
             }
-            for (int i = 0; i < n; i++)
+            for (int i = 0; i < tasks.Count; i++)
             {
                 await tasks[i];
             }
-            mutex.ReleaseMutex();
+            mutex.ReleaseMutex();*/
             return true;
         }
 
@@ -131,6 +137,7 @@ namespace Logic
             await Task.Run(() =>
             {
                 mutex.WaitOne();
+                logger.Write("Removing ball", dataStorage.Get(dataStorage.Count - 1));
                 dataStorage.RemoveAt(dataStorage.Count - 1);
                 mutex.ReleaseMutex();
             });
@@ -145,7 +152,10 @@ namespace Logic
             cancellationToken = cancellationTokenSource.Token;
             foreach (var ball in dataStorage.GetAll())
             {
-                ball.StartMoving(frames, cancellationToken);
+                if (ball != null)
+                {
+                    ball.StartMoving(frames, cancellationToken);
+                }
             }
         }
 
@@ -175,10 +185,6 @@ namespace Logic
             BallCollisions(dataStorage.GetAll(), ball.Index);
             OnPropertyChanged(ball);
             
-            // Write ball data to xml
-            //Ball ball1 = (Ball)ball;
-            //writer.WriteString(ball1.ToXml());
-            // ################
             mutex.ReleaseMutex();
             updateCallback.Invoke();
         }
@@ -194,15 +200,10 @@ namespace Logic
                 if (currentBall.isIntersecting(otherBall))
                 {
                     ResolveCollision(currentBall, otherBall);
+                    logger.Write("Collisions", new List<object> { currentBall, otherBall });
                 }
             }
         }
-
-        public override void UpdateMovingObjects(float deltaTime)
-        {
-
-        }
-
 
         private void WallCollision(Data.MovingObject movingObject, Vector2 boxSize, float milliseconds)
         {
@@ -221,6 +222,7 @@ namespace Logic
                 movingObject.Velocity.Y *= -1;
             if (movingObject.BoundsDown + movingObject.Velocity.Y * deltaTime < 0)
                 movingObject.Velocity.Y *= -1;
+            logger.Write("Wall collision", movingObject);
             //movingObject.Move(deltaTime);
         }
 
