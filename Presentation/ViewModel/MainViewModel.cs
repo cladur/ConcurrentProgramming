@@ -27,14 +27,12 @@ namespace Presentation.ViewModel
             set => Model.SetStartingBalls(value);
         }
         public ICommand AddBallClick { get; set; }
-        public ICommand RemoveBallClick { get; set; }
         public ICommand AddNBallsClick { get; set; }
 
         public MainViewModel()
         {
             Model = new Model.Model(800, 370, UpdateDisplayedBalls);
             AddBallClick = new RelayCommand(Model.AddBall);
-            RemoveBallClick = new RelayCommand(Model.RemoveBall);
             AddNBallsClick = new RelayCommand(Model.AddNBalls);
             Items = Model.GetMovableObjects();   
         }

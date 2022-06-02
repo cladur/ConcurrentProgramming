@@ -102,7 +102,7 @@ namespace Data
 
         public override void StartMoving(int interval, CancellationToken cancellationToken)
         {
-            task = Task.Run(() => Run(interval, cancellationToken));
+            task = Run(interval, cancellationToken);
         }
 
         public string ToXml()

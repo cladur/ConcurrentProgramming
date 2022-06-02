@@ -35,7 +35,6 @@
         </ItemsControl>
         <StackPanel Orientation="Horizontal">
             <Button Content="Add Ball" MinHeight="40" MinWidth="80" Margin="10" Command= "{Binding AddBallClick}"/>
-            <Button Content="Remove Ball" MinHeight="40" MinWidth="80" Margin="10" Command= "{Binding RemoveBallClick}"/>
             <Slider Name="BallCountSlider" Value="{Binding StartingBallCount}" Minimum="1" Maximum="9" IsSnapToTickEnabled="True" TickFrequency="1" Margin="10" VerticalAlignment="Center" Width="400"/>
             <Label Content="{Binding ElementName=BallCountSlider, Path=Value}" Margin="10" FontSize="20"/>
             <Button Content="Add N Balls" MinHeight="40" MinWidth="80" Margin="10" Command= "{Binding AddNBallsClick}"/>

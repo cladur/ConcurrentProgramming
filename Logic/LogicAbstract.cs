@@ -15,8 +15,6 @@ namespace Logic
 
         public abstract Task<bool> AddNBalls(int n);
 
-        public abstract Task<bool> RemoveMovingObject();
-
         public abstract int GetStartingBalls();
 
         public abstract void SetStartingBalls(int n);

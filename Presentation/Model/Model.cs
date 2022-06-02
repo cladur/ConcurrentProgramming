@@ -37,11 +37,6 @@ namespace Presentation.Model
             logic.SetStartingBalls(n);
         }
 
-        public void RemoveBall()
-        {
-            logic.RemoveMovingObject();
-        }
-
         public ObservableCollection<Data.MovingObject> GetMovableObjects()
         {
             return logic.GetObservableCollection();

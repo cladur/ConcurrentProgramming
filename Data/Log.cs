@@ -66,10 +66,10 @@ namespace Data
         public string Text;
         public object Obj;
 
-        public LogText(string text, string time, object obj)
+        public LogText(string time, string text, object obj)
         {
-            Text = text;
             Time = time;
+            Text = text;
             Obj = obj;
         }
 

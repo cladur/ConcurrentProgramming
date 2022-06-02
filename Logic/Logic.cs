@@ -5,14 +5,12 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using System.ComponentModel;
-using System.IO;
 
 namespace Logic
 {
     internal class Logic : LogicAbstract
     {
         private Random random = new Random();
-        private HighResolutionTimer timer;
         DataStorageAbstract dataStorage;
         private LogAbstract logger;
         Vector2 boxSize;
@@ -21,7 +19,7 @@ namespace Logic
         CancellationTokenSource cancellationTokenSource;
         CancellationToken cancellationToken;
         Action updateCallback;
-        int frames = 16;
+        int frames = 33;
 
         public Logic(DataStorageAbstract dataStorage, Vector2 boxSize, Action updateCallback)
         {
@@ -37,11 +35,6 @@ namespace Logic
             this.boxSize = boxSize;
             this.updateCallback = updateCallback;
             this.logger = logApi;
-
-            //timer = new HighResolutionTimer(frames);
-            //timer.UseHighPriorityThread = false;
-            //timer.Elapsed += (s, e) => UpdateMovingObjects(frames);
-            //timer.Start();
         }
 
         private bool TryAddBall()
@@ -61,6 +54,7 @@ namespace Logic
             {
                 return false;
             }
+            mutex.WaitOne();
             if (dataStorage.Count != 0)
             {
                 for (int i = 0; i < dataStorage.Count; i++)
@@ -76,6 +70,7 @@ namespace Logic
             }
             ball.PropertyChanged += BallChanged;
             dataStorage.Add(ball);
+            mutex.ReleaseMutex();
             // logging adding ball
             logger.Write("Adding ball", ball);
             
@@ -84,7 +79,6 @@ namespace Logic
 
         public override async Task<bool> AddBall()
         {
-            mutex.WaitOne();
             await Task.Run(() =>
             {
                 bool flag = true;
@@ -93,7 +87,6 @@ namespace Logic
                     flag = !TryAddBall();
                 }
             });
-            mutex.ReleaseMutex();
             Stop();
             // todo: it sometmes throws null pointer ex here when initializing the first N balls
             Start();
@@ -106,17 +99,6 @@ namespace Logic
             {
                 await AddBall();
             }
-            /* mutex.WaitOne();
-            List<Task<bool>> tasks = new List<Task<bool>>();
-            for (int i = 0; i < n; i++)
-            {
-                tasks.Add(AddBall());
-            }
-            for (int i = 0; i < tasks.Count; i++)
-            {
-                await tasks[i];
-            }
-            mutex.ReleaseMutex();*/
             return true;
         }
 
@@ -130,26 +112,11 @@ namespace Logic
             startingBalls = n;
         }
 
-        public override async Task<bool> RemoveMovingObject()
-        {
-            if (dataStorage.Count == 0)
-                return false;
-            await Task.Run(() =>
-            {
-                mutex.WaitOne();
-                logger.Write("Removing ball", dataStorage.Get(dataStorage.Count - 1));
-                dataStorage.RemoveAt(dataStorage.Count - 1);
-                mutex.ReleaseMutex();
-            });
-            Stop();
-            Start();
-            return true;
-        }
-
         public override void Start()
         {
             cancellationTokenSource = new CancellationTokenSource();
             cancellationToken = cancellationTokenSource.Token;
+            mutex.WaitOne();
             foreach (var ball in dataStorage.GetAll())
             {
                 if (ball != null)
@@ -157,6 +124,7 @@ namespace Logic
                     ball.StartMoving(frames, cancellationToken);
                 }
             }
+            mutex.ReleaseMutex();
         }
 
         public override void Stop()
@@ -200,7 +168,7 @@ namespace Logic
                 if (currentBall.isIntersecting(otherBall))
                 {
                     ResolveCollision(currentBall, otherBall);
-                    logger.Write("Collisions", new List<object> { currentBall, otherBall });
+                    logger.Write("Ball collision", new List<object> { currentBall, otherBall });
                 }
             }
         }
@@ -214,15 +182,29 @@ namespace Logic
             // Converting from milliseconds to seconds
             float deltaTime = milliseconds / 1000;
             // Check for wall collision
+            bool collided = false;
             if (movingObject.BoundsRight + movingObject.Velocity.X * deltaTime > boxSize.X)
+            {
                 movingObject.Velocity.X *= -1;
+                collided = true;
+            }
             if (movingObject.BoundsLeft + movingObject.Velocity.X * deltaTime < 0)
+            {
                 movingObject.Velocity.X *= -1;
+                collided = true;
+            }
             if (movingObject.BoundsUp + movingObject.Velocity.Y * deltaTime > boxSize.Y)
+            {
                 movingObject.Velocity.Y *= -1;
+                collided = true;
+            }
             if (movingObject.BoundsDown + movingObject.Velocity.Y * deltaTime < 0)
+            {
                 movingObject.Velocity.Y *= -1;
-            logger.Write("Wall collision", movingObject);
+                collided = true;
+            }
+            if (collided)
+                logger.Write("Wall collision", movingObject);
             //movingObject.Move(deltaTime);
         }
 
